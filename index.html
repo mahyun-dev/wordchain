@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 끝말잇기 게임</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 700px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+
+        .difficulty-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .difficulty-btn {
+            padding: 12px 24px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            font-size: 1em;
+        }
+
+        .difficulty-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .difficulty-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #764ba2;
+        }
+
+        .difficulty-easy {
+            border-color: #4caf50;
+            color: #4caf50;
+        }
+
+        .difficulty-easy.active {
+            background: #4caf50;
+            color: white;
+            border-color: #4caf50;
+        }
+
+        .difficulty-hard {
+            border-color: #f44336;
+            color: #f44336;
+        }
+
+        .difficulty-hard.active {
+            background: #f44336;
+            color: white;
+            border-color: #f44336;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .info-item {
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .chat-container {
+            height: 400px;
+            overflow-y: auto;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: #f9f9f9;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 18px;
+            border-radius: 15px;
+            max-width: 80%;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .ai-message {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .system-message {
+            background: #ffd93d;
+            color: #333;
+            text-align: center;
+            margin: 10px auto;
+            font-weight: bold;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            flex: 1;
+            padding: 15px;
+            font-size: 1.1em;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            border-color: #764ba2;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .submit-btn {
+            background: #667eea;
+            color: white;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .restart-btn {
+            width: 100%;
+            background: #764ba2;
+            color: white;
+        }
+
+        .restart-btn:hover {
+            background: #643a8c;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(118, 75, 162, 0.4);
+        }
+
+        #feedback {
+            text-align: center;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            min-height: 40px;
+            font-weight: bold;
+        }
+
+        .feedback-error {
+            background: #ffe0e0;
+            color: #d32f2f;
+        }
+
+        .feedback-success {
+            background: #e0f7e0;
+            color: #2e7d32;
+        }
+
+        .used-words {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 10px;
+        }
+
+        .used-words-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .word-chip {
+            display: inline-block;
+            padding: 5px 12px;
+            margin: 5px;
+            background: white;
+            border: 1px solid #667eea;
+            border-radius: 20px;
+            font-size: 0.9em;
+            color: #667eea;
+        }
+
+        .current-word {
+            text-align: center;
+            font-size: 1.3em;
+            padding: 15px;
+            background: linear-gradient(135deg, #ffd93d 0%, #ffb74d 100%);
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .timer-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .timer {
+            display: inline-block;
+            padding: 10px 20px;
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            min-width: 100px;
+            transition: all 0.3s;
+        }
+
+        .timer.warning {
+            border-color: #ff9800;
+            color: #ff9800;
+            animation: pulse 1s infinite;
+        }
+
+        .timer.danger {
+            border-color: #f44336;
+            color: #f44336;
+            animation: pulse 0.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 AI 끝말잇기</h1>
+        <p class="subtitle">AI와 끝말잇기 대결을 펼쳐보세요!</p>
+
+        <div class="difficulty-selector">
+            <button class="difficulty-btn difficulty-easy" onclick="setDifficulty('easy')">
+                🟢 쉬움
+            </button>
+            <button class="difficulty-btn active" onclick="setDifficulty('normal')">
+                🟡 보통
+            </button>
+            <button class="difficulty-btn difficulty-hard" onclick="setDifficulty('hard')">
+                🔴 어려움
+            </button>
+        </div>
+
+        <div class="game-info">
+            <div class="info-item">
+                <div class="info-label">연속 성공</div>
+                <div class="info-value" id="score">0</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">남은 생명</div>
+                <div class="info-value" id="lives">❤️❤️❤️</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">사용된 단어</div>
+                <div class="info-value" id="wordCount">0</div>
+            </div>
+        </div>
+
+        <div class="current-word" id="currentWord">
+            🎯 시작 단어: <span id="startWord">사과</span>
+        </div>
+
+        <div class="timer-container">
+            <div class="timer" id="timer">⏱️ --</div>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="message system-message">
+                게임을 시작합니다! '사과'로 시작하는 단어를 입력하세요.
+            </div>
+        </div>
+
+        <div id="feedback"></div>
+
+        <div class="input-container">
+            <input 
+                type="text" 
+                id="wordInput" 
+                placeholder="'과'로 시작하는 단어를 입력하세요" 
+                maxlength="10"
+                autocomplete="off"
+            />
+            <button class="submit-btn" id="submitBtn" onclick="submitWord()">제출</button>
+        </div>
+
+        <button class="restart-btn" onclick="restartGame()">🔄 새 게임 시작</button>
+
+        <div class="used-words">
+            <div class="used-words-title">📝 사용된 단어 목록</div>
+            <div id="usedWordsList">
+                <span class="word-chip">사과</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 단어 데이터베이스 파일 불러오기 -->
+    <script src="words.js"></script>
+    
+    <script>
+        // 게임 상태
+        let currentWord = '사과';
+        let usedWords = new Set(['사과']);
+        let score = 0;
+        let lives = 3;
+        let gameActive = true;
+        let isAITurn = false;
+        let difficulty = 'normal';
+        let aiThinkTime = 1500;
+        let timer = null;
+        let timeLeft = 0;
+        let timerInterval = null;
+
+        // 난이도별 설정
+        const difficultySettings = {
+            easy: { lives: 5, aiSpeed: 2000, aiMistakeChance: 0.15, timeLimit: 30 },
+            normal: { lives: 3, aiSpeed: 1500, aiMistakeChance: 0.05, timeLimit: 15 },
+            hard: { lives: 2, aiSpeed: 800, aiMistakeChance: 0, timeLimit: 8 }
+        };
+
+        // 타이머 시작
+        function startTimer() {
+            stopTimer();
+            const settings = difficultySettings[difficulty];
+            timeLeft = settings.timeLimit;
+            updateTimerDisplay();
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    stopTimer();
+                    handleTimeout();
+                }
+            }, 1000);
+        }
+
+        // 타이머 정지
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        // 타이머 표시 업데이트
+        function updateTimerDisplay() {
+            const timerElement = document.getElementById('timer');
+            const settings = difficultySettings[difficulty];
+            
+            if (timeLeft === null || timeLeft === undefined || !gameActive) {
+                timerElement.textContent = '⏱️ --';
+                timerElement.className = 'timer';
+                return;
+            }
+            
+            timerElement.textContent = `⏱️ ${timeLeft}초`;
+            
+            // 시간에 따른 색상 변경
+            const warningTime = Math.ceil(settings.timeLimit * 0.3);
+            const dangerTime = Math.ceil(settings.timeLimit * 0.15);
+            
+            if (timeLeft <= dangerTime) {
+                timerElement.className = 'timer danger';
+            } else if (timeLeft <= warningTime) {
+                timerElement.className = 'timer warning';
+            } else {
+                timerElement.className = 'timer';
+            }
+        }
+
+        // 시간 초과 처리
+        function handleTimeout() {
+            if (!gameActive || isAITurn) return;
+            
+            lives--;
+            showFeedback('⏰ 시간 초과! 생명이 -1 되었습니다.', 'error');
+            updateDisplay();
+            
+            if (lives <= 0) {
+                gameOver(false);
+            } else {
+                // 타이머 재시작
+                startTimer();
+            }
+        }
+
+        // 난이도 설정
+        function setDifficulty(level) {
+            difficulty = level;
+            const settings = difficultySettings[level];
+            lives = settings.lives;
+            aiThinkTime = settings.aiSpeed;
+            
+            // 버튼 활성화 표시
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 게임 초기화
+            initGame();
+        }
+
+        // 랜덤 시작 단어 선택
+        function getRandomStartWord() {
+            return startWords[Math.floor(Math.random() * startWords.length)];
+        }
+
+        // 게임 초기화
+        function initGame() {
+            stopTimer();
+            const startWord = getRandomStartWord();
+            currentWord = startWord;
+            usedWords = new Set([startWord]);
+            score = 0;
+            gameActive = true;
+            isAITurn = false;
+
+            document.getElementById('chatContainer').innerHTML = `
+                <div class="message system-message">
+                    게임을 시작합니다! '${startWord}'로 시작하는 단어를 입력하세요.
+                </div>
+            `;
+            
+            document.getElementById('wordInput').value = '';
+            document.getElementById('wordInput').disabled = false;
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('feedback').textContent = '';
+            
+            updateDisplay();
+            updatePlaceholder();
+            updateUsedWords();
+            
+            document.getElementById('wordInput').focus();
+            
+            // 타이머 시작
+            startTimer();
+        }
+
+        // 초기화
+        function init() {
+            initGame();
+        }
+
+        // Enter 키 이벤트
+        document.getElementById('wordInput').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter' && !isAITurn) {
+                submitWord();
+            }
+        });
+
+        // 단어 제출
+        function submitWord() {
+            if (!gameActive || isAITurn) return;
+
+            const input = document.getElementById('wordInput');
+            const word = input.value.trim();
+
+            // 유효성 검사
+            if (!word) {
+                showFeedback('단어를 입력해주세요!', 'error');
+                return;
+            }
+
+            if (word.length < 2) {
+                showFeedback('2글자 이상의 단어를 입력해주세요!', 'error');
+                return;
+            }
+
+            // 끝말잇기 규칙 확인
+            const lastChar = getLastChar(currentWord);
+            const firstChar = word[0];
+
+            if (firstChar !== lastChar) {
+                showFeedback(`'${lastChar}'로 시작하는 단어를 입력해주세요!`, 'error');
+                lives--;
+                updateDisplay();
+                if (lives <= 0) {
+                    gameOver(false);
+                }
+                return;
+            }
+
+            // 중복 단어 확인
+            if (usedWords.has(word)) {
+                showFeedback('이미 사용된 단어입니다!', 'error');
+                lives--;
+                updateDisplay();
+                if (lives <= 0) {
+                    gameOver(false);
+                }
+                return;
+            }
+
+            // 단어 등록
+            usedWords.add(word);
+            score++;
+            currentWord = word;
+            
+            addMessage(word, 'user');
+            input.value = '';
+            
+            updateDisplay();
+            updateUsedWords();
+            showFeedback('좋아요! AI의 차례입니다.', 'success');
+
+            // 타이머 정지
+            stopTimer();
+
+            // AI 턴
+            isAITurn = true;
+            document.getElementById('submitBtn').disabled = true;
+            input.disabled = true;
+
+            setTimeout(() => {
+                aiTurn();
+            }, aiThinkTime);
+        }
+
+        // AI 턴
+        function aiTurn() {
+            const lastChar = getLastChar(currentWord);
+            const possibleWords = wordDatabase[lastChar] || [];
+            
+            // 사용하지 않은 단어 필터링
+            const availableWords = possibleWords.filter(word => !usedWords.has(word));
+
+            // 난이도별 AI 실수 확률
+            const settings = difficultySettings[difficulty];
+            const shouldMakeMistake = Math.random() < settings.aiMistakeChance;
+
+            if (availableWords.length === 0 || shouldMakeMistake) {
+                // AI가 단어를 찾지 못하거나 일부러 실수
+                addMessage('...', 'ai');
+                setTimeout(() => {
+                    if (shouldMakeMistake && difficulty === 'easy') {
+                        addMessage('아... 어려운데요? 당신이 이겼습니다! 🎉', 'system');
+                    } else {
+                        addMessage('더 이상 단어가 생각나지 않아요! 당신이 이겼습니다! 🎉', 'system');
+                    }
+                    gameOver(true);
+                }, 1000);
+                return;
+            }
+
+            // 랜덤 단어 선택
+            const aiWord = availableWords[Math.floor(Math.random() * availableWords.length)];
+            usedWords.add(aiWord);
+            currentWord = aiWord;
+
+            addMessage(aiWord, 'ai');
+            updateDisplay();
+            updateUsedWords();
+            updatePlaceholder();
+
+            isAITurn = false;
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('wordInput').disabled = false;
+            document.getElementById('wordInput').focus();
+            
+            // 타이머 재시작
+            startTimer();
+            
+            // 난이도별 메시지
+            let message = `당신의 차례입니다! '${getLastChar(currentWord)}'로 시작하세요.`;
+            if (difficulty === 'hard') {
+                message = `빨리! '${getLastChar(currentWord)}'로 시작하는 단어!`;
+            }
+            showFeedback(message, 'success');
+        }
+
+        // 마지막 글자 가져오기
+        function getLastChar(word) {
+            return word[word.length - 1];
+        }
+
+        // 메시지 추가
+        function addMessage(text, type) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            
+            if (type === 'user') {
+                messageDiv.className = 'message user-message';
+                messageDiv.textContent = `나: ${text}`;
+            } else if (type === 'ai') {
+                messageDiv.className = 'message ai-message';
+                messageDiv.textContent = `AI: ${text}`;
+            } else {
+                messageDiv.className = 'message system-message';
+                messageDiv.textContent = text;
+            }
+
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // 피드백 표시
+        function showFeedback(message, type) {
+            const feedback = document.getElementById('feedback');
+            feedback.textContent = message;
+            feedback.className = type === 'error' ? 'feedback-error' : 'feedback-success';
+            
+            setTimeout(() => {
+                feedback.textContent = '';
+                feedback.className = '';
+            }, 3000);
+        }
+
+        // 화면 업데이트
+        function updateDisplay() {
+            document.getElementById('score').textContent = score;
+            document.getElementById('lives').textContent = '❤️'.repeat(lives);
+            document.getElementById('wordCount').textContent = usedWords.size;
+            document.getElementById('startWord').textContent = currentWord;
+        }
+
+        // 플레이스홀더 업데이트
+        function updatePlaceholder() {
+            const lastChar = getLastChar(currentWord);
+            document.getElementById('wordInput').placeholder = `'${lastChar}'로 시작하는 단어를 입력하세요`;
+        }
+
+        // 사용된 단어 목록 업데이트
+        function updateUsedWords() {
+            const container = document.getElementById('usedWordsList');
+            container.innerHTML = Array.from(usedWords)
+                .map(word => `<span class="word-chip">${word}</span>`)
+                .join('');
+        }
+
+        // 게임 오버
+        function gameOver(won) {
+            gameActive = false;
+            stopTimer();
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('wordInput').disabled = true;
+            updateTimerDisplay();
+
+            if (won) {
+                addMessage(`🎉 승리! 최종 점수: ${score}점`, 'system');
+            } else {
+                addMessage(`😢 패배! 최종 점수: ${score}점`, 'system');
+            }
+        }
+
+        // 게임 재시작
+        function restartGame() {
+            initGame();
+        }
+
+        // 초기화 실행
+        init();
+    </script>
+</body>
+</html>
