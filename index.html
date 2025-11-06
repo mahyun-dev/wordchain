@@ -372,7 +372,7 @@
 
         <div class="chat-container" id="chatContainer">
             <div class="message system-message">
-                게임을 시작합니다! '사과'(을)로 시작하는 단어를 입력하세요.
+                게임을 시작합니다! '사과'(으)로 시작하는 단어를 입력하세요.
             </div>
         </div>
 
@@ -382,7 +382,7 @@
             <input 
                 type="text" 
                 id="wordInput" 
-                placeholder="'과'(을)로 시작하는 단어를 입력하세요" 
+                placeholder="'과'(으)로 시작하는 단어를 입력하세요" 
                 maxlength="10"
                 autocomplete="off"
             />
@@ -525,7 +525,7 @@
 
             document.getElementById('chatContainer').innerHTML = `
                 <div class="message system-message">
-                    게임을 시작합니다! '${startWord}'로 시작하는 단어를 입력하세요.
+                    게임을 시작합니다! '${startWord}'(으)로 시작하는 단어를 입력하세요.
                 </div>
             `;
             
@@ -579,7 +579,7 @@
             const firstChar = word[0];
 
             if (firstChar !== lastChar) {
-                showFeedback(`'${lastChar}'로 시작하는 단어를 입력해주세요!`, 'error');
+                showFeedback(`'${lastChar}'(으)로 시작하는 단어를 입력해주세요!`, 'error');
                 lives--;
                 updateDisplay();
                 if (lives <= 0) {
@@ -669,9 +669,9 @@
             startTimer();
             
             // 난이도별 메시지
-            let message = `당신의 차례입니다! '${getLastChar(currentWord)}'로 시작하세요.`;
+            let message = `당신의 차례입니다! '${getLastChar(currentWord)}'(으)로 시작하세요.`;
             if (difficulty === 'hard') {
-                message = `빨리! '${getLastChar(currentWord)}'로 시작하는 단어!`;
+                message = `빨리! '${getLastChar(currentWord)}'(으)로 시작하는 단어!`;
             }
             showFeedback(message, 'success');
         }
@@ -724,7 +724,7 @@
         // 플레이스홀더 업데이트
         function updatePlaceholder() {
             const lastChar = getLastChar(currentWord);
-            document.getElementById('wordInput').placeholder = `'${lastChar}'로 시작하는 단어를 입력하세요`;
+            document.getElementById('wordInput').placeholder = `'${lastChar}'(으)로 시작하는 단어를 입력하세요`;
         }
 
         // 사용된 단어 목록 업데이트
